@@ -19,7 +19,7 @@
  * Difficulty: 1
  */
 int bitAnd(int x, int y) {
-    return 2;
+    return ~(~x | ~y);
 }
 
 /*
@@ -30,7 +30,7 @@ int bitAnd(int x, int y) {
  *   Difficulty: 1
  */
 int bitXor(int x, int y) {
-    return 2;
+    return ~(x & y) & ~(~x & ~y);
 }
 
 /*
@@ -50,7 +50,15 @@ int bitXor(int x, int y) {
  *   1 if x and y have the same sign , 0 otherwise.
  */
 int samesign(int x, int y) {
-    return 2;
+    if (!x)
+    {
+        return !y;
+    }
+    if (!y)
+    {
+        return 0;
+    }
+    return !((x >> 31) ^ (y >> 31));
 }
 
 /*
@@ -63,7 +71,24 @@ int samesign(int x, int y) {
  *   Difficulty: 4
  */
 int logtwo(int v) {
-    return 2;
+
+    int b16, b8, b4, b2, b1;
+
+    b16 = ((v >> 16) > 0) << 4;
+    v = v >> b16;
+
+    b8 = ((v >> 8) > 0) << 3;   
+    v = v >> b8;
+
+    b4 = ((v >> 4) > 0) << 2;  
+    v = v >> b4;
+
+    b2 = ((v >> 2) > 0) << 1;   
+    v = v >> b2;
+
+    b1 = (v >> 1) > 0;          
+
+    return b16 | b8 | b4 | b2 | b1;
 }
 
 /*
@@ -76,7 +101,12 @@ int logtwo(int v) {
  *    Difficulty: 2
  */
 int byteSwap(int x, int n, int m) {
-    return 2;
+    int N = n << 3;
+    int M = m << 3;
+    int an = (x >> N) & 0xff;
+    int am = (x >> M) & 0xff;
+    int mask = ~((0xff << N) | (0xff << M));
+    return (x & mask) | (an << M) | (am << N);
 }
 
 /*
@@ -88,7 +118,17 @@ int byteSwap(int x, int n, int m) {
  *   Difficulty: 3
  */
 unsigned reverse(unsigned v) {
-    return 2;
+    int n = 0;
+    int re = 0;
+    int r,l;
+    while(n - 16)
+    {
+        r = 1 & (v >> n);
+        l = 1 & (v >> (31 - n));
+        re = re + (r << (31 - n)) + (l << n);
+        n = n + 1;
+    }
+    return re;
 }
 
 /*
@@ -100,7 +140,8 @@ unsigned reverse(unsigned v) {
  *   Difficulty: 3
  */
 int logicalShift(int x, int n) {
-    return 2;
+ 
+    return ~(((1 << 31) >> n) << 1) & (x >> n);
 }
 
 /*
@@ -112,7 +153,28 @@ int logicalShift(int x, int n) {
  *   Difficulty: 4
  */
 int leftBitCount(int x) {
-    return 2;
+    int b16, b8, b4, b2, b1, b0;
+    int rex = ~x;
+
+    b16 = (!(!(rex >> 16))) << 4; 
+    rex = rex >> b16;                
+
+    b8 = (!(!(rex >> 8))) << 3;   
+    rex = rex >> b8;
+
+    b4 = (!(!(rex >> 4))) << 2;   
+    rex = rex >> b4;
+
+    b2 = (!(!(rex >> 2))) << 1;  
+    rex = rex >> b2;
+
+    b1 = (!(!(rex >> 1)));       
+    rex = rex >> b1;
+
+    b0 = rex;
+
+    return (x >> 31) & (33 + ~(b16 + b8 + b4 + b2 + b1 + b0));
+    
 }
 
 /*
@@ -124,6 +186,7 @@ int leftBitCount(int x) {
  *   Difficulty: 4
  */
 unsigned float_i2f(int x) {
+    
     return 2;
 }
 
