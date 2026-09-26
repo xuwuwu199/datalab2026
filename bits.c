@@ -186,8 +186,44 @@ int leftBitCount(int x) {
  *   Difficulty: 4
  */
 unsigned float_i2f(int x) {
-    
-    return 2;
+    if(!x) {return 0;}
+    if(x == 0x80000000) {return 0xcf000000;}
+    unsigned s = x & 0x80000000;
+    unsigned left;
+    if (s)
+    {
+        x = -x;
+    }
+    int a = x;
+    int bits = 0;
+    int b = 16;
+    while(b > 0)
+    {
+        left = a >> b;
+        if(left)
+        {
+            a = left;
+            bits = bits + b;
+        }
+        b = b >> 1;
+    } 
+    int sh = bits - 23;
+    unsigned sig;
+    if(sh > 0)
+    {
+        sig = x >> sh;
+        unsigned rest = (x & ((1 << sh) - 1));
+        unsigned half = 1 << (sh - 1);
+        if((rest > half) | ((rest == half) & (sig & 1)))
+        {
+            sig = sig + 1;
+        }
+    }
+    else
+    {
+        sig = (x << (-sh));
+    }
+    return s + sig + ((bits + 126) << 23);
 }
 
 /*
@@ -202,7 +238,16 @@ unsigned float_i2f(int x) {
  *   Difficulty: 4
  */
 unsigned floatScale2(unsigned uf) {
-    return 2;
+    unsigned e = uf & 0x7f800000;
+    unsigned s = uf & 0x80000000;
+    if (!e) {return s + (uf << 1);}
+    if (e == 0x7f800000) {return uf;}
+    uf = uf + 0x800000;
+    if((uf & 0x7f800000) == 0x7f800000)
+    {
+        return s + 0x7f800000;
+    }
+    return uf;
 }
 
 /*
@@ -219,7 +264,23 @@ unsigned floatScale2(unsigned uf) {
  *   Difficulty: 3
  */
 int float64_f2i(unsigned uf1, unsigned uf2) {
-    return 2;
+    unsigned sign = uf2 >> 31;
+    unsigned exp = (uf2 >> 20) & 0x7ff;
+    unsigned result;
+    int E = exp - 1023;
+    if(E >= 31) {return 0x80000000;}
+    if(E < 0) {return 0;}
+    if(E <= 20)
+    {
+        unsigned frac = (uf2 & 0xfffff) | 0x100000;
+        result = frac >> (20 - E);
+    }
+    else
+    {
+        result = (uf1 >> (52 - E)) | ((uf2 & 0xfffff) << (E - 20)) | (1 << E);
+    }
+    if(sign) {return -result;}
+    return result;
 }
 
 /*
@@ -236,5 +297,10 @@ int float64_f2i(unsigned uf1, unsigned uf2) {
  *   Difficulty: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    if(x < -149) {return 0;}
+    if((-149 <= x) && (x < -126))
+    {return 1 << (x + 149);}
+    if((-126 <= x) && ( x < 128))
+    {return (x + 127) << 23;}
+    return 0x7f800000;
 }
